@@ -1,10 +1,10 @@
 package com.coolweather.android;
 
 import android.app.ProgressDialog;
-import android.content.Intent;
+import android.content.Context;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,10 +30,6 @@ import java.util.List;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
-
-/**
- * Created by 99502 on 2017/8/2.
- */
 
 public class ChooseAreaFragment extends Fragment {
 
@@ -125,7 +121,7 @@ public class ChooseAreaFragment extends Fragment {
     }
 
     /**
-     * 查询全国所有的省，优先从数据库查询，如果没有查询到再去服务器上查询。
+     * 查询全国所有的省，优先从数据库查询，如果没有查询到再去服务器上查询
      */
     private void queryProvinces() {
         titleText.setText("中国");
@@ -144,9 +140,26 @@ public class ChooseAreaFragment extends Fragment {
             queryFromServer(address, "province");
         }
     }
+//    private void queryProvinces() {
+//        titleText.setText("中国");
+//        backButton.setVisibility(View.GONE);
+//        provinceList = DataSupport.findAll(Province.class);
+//        if (provinceList.size() > 0) {
+//            dataList.clear();
+//            for (Province province : provinceList) {
+//                dataList.add(province.getProvinceName());
+//            }
+//            adapter.notifyDataSetChanged();
+//            listView.setSelection(0);
+//            currentLevel = LEVEL_PROVINCE;
+//        } else {
+//            String address = "http://guolin.tech/api/china";
+//            queryFromServer(address, "province");
+//        }
+//    }
 
     /**
-     * 查询选中省内所有的市，优先从数据库查询，如果没有查询到再去服务器上查询。
+     * 查询选中省内所有的市，优先从数据库查询，如果没有查询到再去服务器上查询
      */
     private void queryCities() {
         titleText.setText(selectedProvince.getProvinceName());
@@ -168,7 +181,7 @@ public class ChooseAreaFragment extends Fragment {
     }
 
     /**
-     * 查询选中市内所有的县，优先从数据库查询，如果没有查询到再去服务器上查询。
+     * 查询选中市内所有的县，优先从数据库查询，如果没有查询到再去服务器上查询
      */
     private void queryCounties() {
         titleText.setText(selectedCity.getCityName());
@@ -191,11 +204,17 @@ public class ChooseAreaFragment extends Fragment {
     }
 
     /**
-     * 根据传入的地址和类型从服务器上查询省市县数据。
+     * 根据传入的地址和类型从服务器上查询省市县数据
      */
     private void queryFromServer(String address, final String type) {
         showProgressDialog();
         HttpUtil.sendOkHttpRequest(address, new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                closeProgressDialog();
+                Toast.makeText(getContext(), "加载失败", Toast.LENGTH_SHORT).show();
+            }
+
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 String responseText = response.body().string();
@@ -223,18 +242,6 @@ public class ChooseAreaFragment extends Fragment {
                     });
                 }
             }
-
-            @Override
-            public void onFailure(Call call, IOException e) {
-                // 通过runOnUiThread()方法回到主线程处理逻辑
-                getActivity().runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        closeProgressDialog();
-                        Toast.makeText(getContext(), "加载失败", Toast.LENGTH_SHORT).show();
-                    }
-                });
-            }
         });
     }
 
@@ -244,8 +251,7 @@ public class ChooseAreaFragment extends Fragment {
     private void showProgressDialog() {
         if (progressDialog == null) {
             progressDialog = new ProgressDialog(getActivity());
-            progressDialog.setMessage("正在加载...");
-            progressDialog.setCanceledOnTouchOutside(false);
+            progressDialog.setMessage("正在加载……");
         }
         progressDialog.show();
     }
@@ -258,5 +264,5 @@ public class ChooseAreaFragment extends Fragment {
             progressDialog.dismiss();
         }
     }
-
 }
+
